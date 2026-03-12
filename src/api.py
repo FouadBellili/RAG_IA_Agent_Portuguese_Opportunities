@@ -15,7 +15,6 @@ api = FastAPI(
 
 DB_URL = os.getenv("DATABASE_URL")
 
-# --- Schémas Pydantic ---
 class QueryRequest(BaseModel):
     question: str
 
@@ -24,7 +23,6 @@ class QueryResponse(BaseModel):
     answer: str
     sources: list[str]
 
-# --- Endpoints ---
 
 @api.get("/health")
 def health():
@@ -39,7 +37,6 @@ def query(request: QueryRequest):
         "generation": ""
     })
     
-    # Les sources sont dans result["context"]
     sources = []
     for doc in result.get("context", []):
         for line in doc.split("\n"):
