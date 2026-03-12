@@ -1,10 +1,9 @@
 def main():
-    # src/main.py
-    from agent import app
+    from src.agent import app
 
     if __name__ == "__main__":
         questions = [
-        "Quelles sont les bourses disponibles à l'Université d'Aveiro ?",
+        "Quelles sont les opportunités pour un professeur de physique ?",
         "Y a-t-il des offres en ingénierie informatique ?",
         "Quels sont les montants des bourses proposées ?",
     ]

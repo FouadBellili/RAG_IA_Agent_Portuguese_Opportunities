@@ -16,15 +16,15 @@ def index_data():
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
     cur = conn.cursor()
 
-    cur.execute("SELECT id, description FROM items WHERE embedding IS NULL")
+    cur.execute("SELECT id, body FROM items WHERE embedding IS NULL")
     rows = cur.fetchall()
     
     print(f"Extraction de {len(rows)} articles à vectoriser...")
 
-    for item_id, description in rows:
-        if not description: continue
+    for item_id, body in rows:
+        if not body: continue
         
-        vector = embeddings_model.embed_query(description)
+        vector = embeddings_model.embed_query(body)
         
         cur.execute(
             "UPDATE items SET embedding = %s WHERE id = %s",

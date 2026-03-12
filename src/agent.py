@@ -3,6 +3,8 @@ import psycopg2
 from typing import List, TypedDict
 from dotenv import load_dotenv
 
+from langchain_groq import ChatGroq
+
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langgraph.graph import StateGraph, START, END
 
@@ -18,10 +20,14 @@ class GraphState(TypedDict):
 
 embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL,
     task_type="retrieval_document",
-    task_type="retrieval_query",
-    google_api_key=os.getenv("GEMINI_API_KEY")
+    google_api_key=os.getenv("GEMINI_API_KEY"),
+    output_dimensionality=768,
     )
-llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0,google_api_key=os.getenv("GEMINI_API_KEY"))
+llm = ChatGroq(
+    model="llama-3.1-8b-instant",
+    temperature=0,
+    api_key=os.getenv("GROQ_API_KEY")
+)
 
 DB_URL = os.getenv("DATABASE_URL")
 
@@ -34,7 +40,7 @@ def retrieve(state: GraphState):
     conn = psycopg2.connect(DB_URL)
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT description, title, url 
+            SELECT body, title, url 
             FROM items 
             ORDER BY embedding <=> %s::vector 
             LIMIT 3
@@ -47,7 +53,7 @@ def retrieve(state: GraphState):
     return {"context": context}
 
 def generate(state: GraphState):
-    print("--- GENERATION GEMINI ---")
+    print("--- GENERATION GROQ ---")
     question = state["question"]
     context = "\n\n---\n\n".join(state["context"])
     
@@ -55,7 +61,7 @@ def generate(state: GraphState):
         return {"generation": "Je n'ai trouvé aucune offre correspondante dans la base."}
 
     prompt = f"""Tu es un assistant expert pour les opportunités professionnelles au Portugal.
-    Réponds en français à la question en utilisant UNIQUEMENT le contexte fourni.
+    Réponds en français à la question en utilisant UNIQUEMENT le contexte fourni. Traduit la question en portugais si nécessaire pour mieux comprendre les offres locales, mais rédige ta réponse finale en français.
     
     CONTEXTE:
     {context}
