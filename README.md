@@ -13,7 +13,7 @@ Ce projet permet d'interroger en langage naturel une base de données d'offres d
 | Langage | Python 3.12 |
 | Pipeline RAG | LangGraph + LangChain |
 | Base de données | PostgreSQL + pgvector |
-| Embeddings | Gemini Embedding 001 (3072 dims) |
+| Embeddings | Gemini Embedding 001 (3072 dims -> 768 dims) |
 | LLM | Gemini 2.0 Flash |
 | Gestion des dépendances | uv |
 
