@@ -1,5 +1,10 @@
 services:
   db:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d dbname"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     image: pgvector/pgvector:pg16
     restart: always
     environment:
@@ -12,13 +17,19 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   app:
-    build: .
-    volumes:
-      - .:/app
     environment:
       DATABASE_URL: postgresql://user:pass@db:5432/dbname
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    command: uvicorn src.api:api --host 0.0.0.0 --port 8000 --reload
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
     depends_on:
-      - db
+        db:
+          condition: service_healthy 
 
 volumes:
   postgres_data:

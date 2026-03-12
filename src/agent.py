@@ -11,7 +11,6 @@ from langgraph.graph import StateGraph, START, END
 load_dotenv()
 
 EMBEDDING_MODEL = "models/gemini-embedding-001"
-LLM_MODEL = "gemini-2.0-flash-lite"
 
 class GraphState(TypedDict):
     question: str

@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv pip install --system -r pyproject.toml
+RUN uv sync --frozen
 
 COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "src/migration.py"]
+CMD ["uv", "run", "uvicorn", "src.api:api", "--host", "0.0.0.0", "--port", "8000"]

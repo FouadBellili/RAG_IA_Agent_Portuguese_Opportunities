@@ -4,7 +4,7 @@ Système de recherche intelligente sur des offres d'emploi et bourses de recherc
 
 ## Description
 
-Ce projet permet d'interroger en langage naturel une base de données d'offres d'emploi et de bourses universitaires (principalement de l'Université d'Aveiro). Il combine une recherche sémantique par similarité vectorielle avec la génération de réponses contextualisées via l'API Gemini.
+Ce projet permet d'interroger en langage naturel une base de données d'offres d'emploi et de bourses universitaires (principalement de l'Université d'Aveiro). Il combine une recherche sémantique par similarité vectorielle avec la génération de réponses contextualisées via Groq (Llama 3.3).
 
 ## Stack technique
 
@@ -13,8 +13,9 @@ Ce projet permet d'interroger en langage naturel une base de données d'offres d
 | Langage | Python 3.12 |
 | Pipeline RAG | LangGraph + LangChain |
 | Base de données | PostgreSQL + pgvector |
-| Embeddings | Gemini Embedding 001 (3072 dims -> 768 dims) |
-| LLM | Gemini 2.0 Flash |
+| Embeddings | Gemini Embedding 001 (3072 dims) |
+| LLM | Groq — Llama 3.3 70B Versatile |
+| API | FastAPI + Uvicorn |
 | Gestion des dépendances | uv |
 
 ## Architecture
@@ -31,8 +32,10 @@ indexer.py    ──►  Génération des embeddings (Gemini)
                         ▼
 agent.py      ──►  LangGraph (retrieve → generate)
                         │
-                        ▼
-main.py       ──►  Script de test du pipeline
+                   ┌────┴────┐
+                   ▼         ▼
+               api.py     main.py
+            (FastAPI)     (CLI test)
 ```
 
 ## Structure du projet
@@ -43,7 +46,8 @@ main.py       ──►  Script de test du pipeline
 │   ├── migration.py   # Migration SQLite → PostgreSQL
 │   ├── indexer.py     # Vectorisation des articles avec Gemini
 │   ├── agent.py       # Graph LangGraph (RAG)
-├── main.py      # Script de test du pipeline
+│   ├── api.py         # API REST FastAPI
+│   └── main.py        # Script de test CLI
 ├── jobs_and_news.db   # Base SQLite source
 ├── .env               # Variables d'environnement (non versionné)
 └── pyproject.toml
@@ -66,6 +70,7 @@ Créer un fichier `.env` à la racine :
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key
+GROQ_API_KEY=your_groq_api_key
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 ```
 
@@ -81,26 +86,41 @@ uv run src/migration.py
 uv run src/indexer.py
 ```
 
-**3. Tester le pipeline RAG**
+**3. Lancer l'API**
+```bash
+uv run uvicorn src.api:api --reload
+```
+
+**4. Tester le pipeline en CLI**
 ```bash
 uv run src/main.py
 ```
 
-## Exemple de résultat
+## API Endpoints
 
-```
-============================================================
-QUESTION : Quelles sont les bourses disponibles à l'Université d'Aveiro ?
-============================================================
---- RECHERCHE SEMANTIQUE (SQL) ---
-Documents trouvés : 3
---- GENERATION GEMINI ---
+| Méthode | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Informations sur l'API |
+| `GET` | `/health` | Statut de l'API |
+| `POST` | `/query` | Interroge le RAG |
+| `GET` | `/items` | Liste tous les articles |
+| `GET` | `/items/{id}` | Détail d'un article |
 
---- RÉPONSE ---
-D'après les offres disponibles, l'Université d'Aveiro propose
-des Bolsas de Investigação (BI) et des Bolsas de Iniciação à
-Investigação (BII) dans des domaines comme l'ingénierie
-informatique, la physique et les matériaux...
+Documentation interactive disponible sur `http://localhost:8000/docs`
+
+### Exemple `/query`
+
+```json
+// Request
+POST /query
+{ "question": "Quelles bourses sont disponibles en informatique ?" }
+
+// Response
+{
+  "question": "Quelles bourses sont disponibles en informatique ?",
+  "answer": "D'après les offres disponibles, l'Université d'Aveiro propose...",
+  "sources": ["https://www.ua.pt/pt/noticias/3/95960"]
+}
 ```
 
 ## Données
@@ -114,7 +134,6 @@ Chaque article est indexé avec les champs : `titre`, `description`, `body`, `so
 
 ## Prochaines étapes
 
-- [ ] Exposition via API REST (FastAPI)
-- [ ] Interface web de recherche
 - [ ] Ajout de nouvelles sources de données
 - [ ] Recherche hybride (sémantique + full-text)
+- [ ] Interface web de recherche
