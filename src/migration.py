@@ -1,7 +1,10 @@
 import sqlite3
 import psycopg2
 import os
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 db_url = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost:5432/dbname")
 

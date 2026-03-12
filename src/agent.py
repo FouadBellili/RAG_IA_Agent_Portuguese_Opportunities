@@ -18,7 +18,9 @@ class GraphState(TypedDict):
 
 embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL,
     task_type="retrieval_document",
-    output_dimensionality=768)
+    task_type="retrieval_query",
+    google_api_key=os.getenv("GEMINI_API_KEY")
+    )
 llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0,google_api_key=os.getenv("GEMINI_API_KEY"))
 
 DB_URL = os.getenv("DATABASE_URL")
@@ -65,7 +67,6 @@ def generate(state: GraphState):
     response = llm.invoke(prompt)
     return {"generation": response.content}
 
-# 5. Construction du Graphe
 workflow = StateGraph(GraphState)
 workflow.add_node("retrieve", retrieve)
 workflow.add_node("generate", generate)

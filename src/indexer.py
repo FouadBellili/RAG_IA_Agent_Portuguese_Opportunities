@@ -10,7 +10,8 @@ def index_data():
     embeddings_model = GoogleGenerativeAIEmbeddings(
     model="models/gemini-embedding-001",
     task_type="retrieval_document",
-    output_dimensionality=768
+    output_dimensionality=768,
+    google_api_key=os.getenv("GEMINI_API_KEY")
     )
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
     cur = conn.cursor()
