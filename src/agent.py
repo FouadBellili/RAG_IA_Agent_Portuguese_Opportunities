@@ -24,7 +24,7 @@ embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL,
     output_dimensionality=768,
     )
 llm = ChatGroq(
-    model="llama-3.1-8b-instant",
+    model="llama-3.3-70b-versatile",
     temperature=0,
     api_key=os.getenv("GROQ_API_KEY")
 )
@@ -48,7 +48,7 @@ def retrieve(state: GraphState):
         rows = cur.fetchall()
     conn.close()
 
-    context = [f"Titre: {r[1]}\nDescription: {r[0]}\nURL: {r[2]}" for r in rows if r[0]]
+    context = [f"Titre: {r[1]}\nDescription: {r[0][:800]}\nURL: {r[2]}" for r in rows if r[0]]
     print(f"Documents trouvés : {len(context)}")
     return {"context": context}
 
@@ -61,8 +61,7 @@ def generate(state: GraphState):
         return {"generation": "Je n'ai trouvé aucune offre correspondante dans la base."}
 
     prompt = f"""Tu es un assistant expert pour les opportunités professionnelles au Portugal.
-    Réponds en français à la question en utilisant UNIQUEMENT le contexte fourni. Traduit la question en portugais si nécessaire pour mieux comprendre les offres locales, mais rédige ta réponse finale en français.
-    
+    Réponds en français à la question en utilisant UNIQUEMENT le contexte fourni. Traduit la question en portugais si nécessaire.
     CONTEXTE:
     {context}
     
