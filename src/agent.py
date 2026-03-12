@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
 
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langgraph.graph import StateGraph, START, END
 
 load_dotenv()
@@ -19,7 +19,7 @@ class GraphState(TypedDict):
     generation: str
 
 embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL,
-    task_type="retrieval_document",
+    task_type="retrieval_query",
     google_api_key=os.getenv("GEMINI_API_KEY"),
     output_dimensionality=768,
     )

@@ -33,9 +33,13 @@ def health():
 
 @api.post("/query", response_model=QueryResponse)
 def query(request: QueryRequest):
-    result = rag_app.invoke({"question": request.question})
+    result = rag_app.invoke({
+        "question": request.question,
+        "context": [],
+        "generation": ""
+    })
     
-    # Extrait les URLs du contexte
+    # Les sources sont dans result["context"]
     sources = []
     for doc in result.get("context", []):
         for line in doc.split("\n"):
@@ -53,11 +57,11 @@ def query(request: QueryRequest):
 def get_items():
     conn = psycopg2.connect(DB_URL)
     with conn.cursor() as cur:
-        cur.execute("SELECT id, title, source, date, url FROM items ORDER BY date DESC")
+        cur.execute("SELECT id, title, source, url FROM items ORDER BY date DESC")
         rows = cur.fetchall()
     conn.close()
     return [
-        {"id": r[0], "title": r[1], "source": r[2], "date": r[3], "url": r[4]}
+        {"id": r[0], "title": r[1], "source": r[2], "url": r[3]}
         for r in rows
     ]
 
