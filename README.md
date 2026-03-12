@@ -43,7 +43,7 @@ main.py       ──►  Script de test du pipeline
 │   ├── migration.py   # Migration SQLite → PostgreSQL
 │   ├── indexer.py     # Vectorisation des articles avec Gemini
 │   ├── agent.py       # Graph LangGraph (RAG)
-│   └── main.py        # Script de test du pipeline
+├── main.py      # Script de test du pipeline
 ├── jobs_and_news.db   # Base SQLite source
 ├── .env               # Variables d'environnement (non versionné)
 └── pyproject.toml
